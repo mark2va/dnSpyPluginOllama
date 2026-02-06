@@ -1,0 +1,21 @@
+{
+  "OllamaServer": "http://192.168.31.153:11434",
+  "Model": "codellama:7b",
+  "AutoSaveChanges": false,
+  "CreateBackup": true,
+  "Temperature": 0.3,
+  "MaxTokens": 500,
+  "EnableSyntaxValidation": true,
+  "ExcludePatterns": [
+    "*.g.cs",
+    "*.Designer.cs"
+  ],
+  "NamingConventions": {
+    "Class": "PascalCase",
+    "Method": "PascalCase",
+    "Property": "PascalCase",
+    "Field": "_camelCase",
+    "Parameter": "camelCase",
+    "LocalVariable": "camelCase"
+  }
+}
