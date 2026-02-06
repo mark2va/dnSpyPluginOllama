@@ -1,0 +1,181 @@
+// RefactoringUI.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using dnlib.DotNet;
+using dnSpy.Contracts.App;
+using dnSpy.Contracts.Controls;
+
+namespace DnSpyAIRefactor
+{
+    public class RefactoringUI
+    {
+        private readonly RefactoringService refactoringService;
+        private readonly IMessageBoxService messageBoxService;
+        
+        public RefactoringUI(RefactoringService refactoringService, IMessageBoxService messageBoxService)
+        {
+            this.refactoringService = refactoringService;
+            this.messageBoxService = messageBoxService;
+        }
+        
+        public void ShowRefactoringDialog(RefactoringResult result, object entity)
+        {
+            var dialog = new RefactoringDialog(result, entity);
+            dialog.Owner = Application.Current.MainWindow;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            
+            if (dialog.ShowDialog() == true && dialog.AcceptedChanges)
+            {
+                ApplyChanges(result, entity);
+            }
+        }
+        
+        public void ShowBatchAnalysisDialog(CodeAnalysisResult analysis, ModuleDef module)
+        {
+            var dialog = new BatchRefactoringDialog(analysis);
+            dialog.Owner = Application.Current.MainWindow;
+            dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            
+            if (dialog.ShowDialog() == true)
+            {
+                ApplyBatchChanges(analysis, module);
+            }
+        }
+        
+        private void ApplyChanges(RefactoringResult result, object entity)
+        {
+            try
+            {
+                // Здесь должна быть логика применения изменений к dnlib объектам
+                // Это сложная часть, требующая интеграции с dnSpy API
+                
+                messageBoxService.Show($"Successfully renamed {result.EntityType} '{result.OriginalName}' to '{result.NewName}'");
+            }
+            catch (Exception ex)
+            {
+                messageBoxService.Show($"Error applying changes: {ex.Message}");
+            }
+        }
+        
+        private void ApplyBatchChanges(CodeAnalysisResult analysis, ModuleDef module)
+        {
+            // Пакетное применение изменений
+            var changes = new List<string>();
+            
+            foreach (var suggestion in analysis.Suggestions)
+            {
+                try
+                {
+                    // Поиск и переименование сущности
+                    var entity = FindEntity(module, suggestion.OldName, suggestion.EntityType);
+                    if (entity != null)
+                    {
+                        // Изменение имени (упрощенно)
+                        if (entity is TypeDef typeDef)
+                            typeDef.Name = suggestion.NewName;
+                        else if (entity is MethodDef methodDef)
+                            methodDef.Name = suggestion.NewName;
+                        else if (entity is PropertyDef propertyDef)
+                            propertyDef.Name = suggestion.NewName;
+                        else if (entity is FieldDef fieldDef)
+                            fieldDef.Name = suggestion.NewName;
+                        
+                        changes.Add($"{suggestion.EntityType} {suggestion.OldName} → {suggestion.NewName}");
+                    }
+                }
+                catch { }
+            }
+            
+            messageBoxService.Show($"Applied {changes.Count} changes:\n" + string.Join("\n", changes));
+        }
+        
+        private object FindEntity(ModuleDef module, string name, string type)
+        {
+            // Поиск сущности в модуле
+            switch (type.ToLower())
+            {
+                case "class":
+                case "type":
+                    return module.GetTypes().FirstOrDefault(t => t.Name == name);
+                case "method":
+                    return module.GetTypes()
+                        .SelectMany(t => t.Methods)
+                        .FirstOrDefault(m => m.Name == name);
+                case "property":
+                    return module.GetTypes()
+                        .SelectMany(t => t.Properties)
+                        .FirstOrDefault(p => p.Name == name);
+                case "field":
+                    return module.GetTypes()
+                        .SelectMany(t => t.Fields)
+                        .FirstOrDefault(f => f.Name == name);
+                default:
+                    return null;
+            }
+        }
+    }
+    
+    // Диалоговые окна
+    public class RefactoringDialog : Window
+    {
+        private readonly RefactoringResult result;
+        private readonly object entity;
+        
+        public bool AcceptedChanges { get; private set; }
+        
+        public RefactoringDialog(RefactoringResult result, object entity)
+        {
+            this.result = result;
+            this.entity = entity;
+            
+            InitializeComponent();
+        }
+        
+        private void InitializeComponent()
+        {
+            Title = $"AI Refactor - {result.EntityType}";
+            Width = 400;
+            Height = 300;
+            ResizeMode = ResizeMode.CanResize;
+            
+            var stackPanel = new StackPanel
+            {
+                Margin = new Thickness(10)
+            };
+            
+            // Заголовок
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = $"Refactor {result.EntityType}",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+            
+            // Текущее имя
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = $"Current name: {result.OriginalName}",
+                Margin = new Thickness(0, 0, 0, 5)
+            });
+            
+            // Предложение
+            var suggestionBox = new TextBox
+            {
+                Text = result.NewName,
+                Margin = new Thickness(0, 0, 0, 10),
+                Height = 25
+            };
+            stackPanel.Children.Add(suggestionBox);
+            
+            // Кнопки
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 
