@@ -1,0 +1,20 @@
+<!-- DnSpyAIRefactor.dll.manifest -->
+<?xml version="1.0" encoding="utf-8"?>
+<assembly>
+  <assemblyIdentity name="DnSpyAIRefactor" version="1.0.0.0" />
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity name="dnSpy" version="6.1.8.0" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity name="dnSpy.Contracts" version="6.1.8.0" />
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity name="dnSpy.DnSpy" version="6.1.8.0" />
+    </dependentAssembly>
+  </dependency>
+</assembly>
