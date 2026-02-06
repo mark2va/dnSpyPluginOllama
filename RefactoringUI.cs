@@ -178,4 +178,154 @@ namespace DnSpyAIRefactor
             {
                 Orientation = Orientation.Horizontal,
                 HorizontalAlignment = HorizontalAlignment.Right,
-                Margin = new Thickness(0, 
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+            
+            var applyButton = new Button
+            {
+                Content = "Apply",
+                Width = 80,
+                Margin = new Thickness(5, 0, 0, 0)
+            };
+            applyButton.Click += (s, e) =>
+            {
+                result.NewName = suggestionBox.Text;
+                AcceptedChanges = true;
+                DialogResult = true;
+                Close();
+            };
+            
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Margin = new Thickness(5, 0, 0, 0)
+            };
+            cancelButton.Click += (s, e) =>
+            {
+                DialogResult = false;
+                Close();
+            };
+            
+            buttonPanel.Children.Add(applyButton);
+            buttonPanel.Children.Add(cancelButton);
+            stackPanel.Children.Add(buttonPanel);
+            
+            Content = stackPanel;
+        }
+    }
+    
+    public class BatchRefactoringDialog : Window
+    {
+        private readonly CodeAnalysisResult analysis;
+        private CheckBox[] checkBoxes;
+        
+        public BatchRefactoringDialog(CodeAnalysisResult analysis)
+        {
+            this.analysis = analysis;
+            
+            InitializeComponent();
+        }
+        
+        private void InitializeComponent()
+        {
+            Title = "AI Batch Analysis";
+            Width = 600;
+            Height = 500;
+            ResizeMode = ResizeMode.CanResize;
+            
+            var grid = new Grid();
+            
+            // Заголовок
+            var title = new TextBlock
+            {
+                Text = "Code Analysis Results",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(10, 10, 10, 10),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            grid.Children.Add(title);
+            
+            // Список предложений
+            var listView = new ListView
+            {
+                Margin = new Thickness(10, 40, 10, 50),
+                ItemsSource = analysis.Suggestions,
+                View = CreateGridView()
+            };
+            grid.Children.Add(listView);
+            
+            // Кнопки
+            var applyButton = new Button
+            {
+                Content = "Apply Selected",
+                Width = 100,
+                Height = 30,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 0, 120, 10),
+                VerticalAlignment = VerticalAlignment.Bottom
+            };
+            applyButton.Click += (s, e) =>
+            {
+                DialogResult = true;
+                Close();
+            };
+            
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 80,
+                Height = 30,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 0, 20, 10),
+                VerticalAlignment = VerticalAlignment.Bottom
+            };
+            cancelButton.Click += (s, e) =>
+            {
+                DialogResult = false;
+                Close();
+            };
+            
+            grid.Children.Add(applyButton);
+            grid.Children.Add(cancelButton);
+            
+            Content = grid;
+        }
+        
+        private GridView CreateGridView()
+        {
+            var gridView = new GridView();
+            
+            gridView.Columns.Add(new GridViewColumn
+            {
+                Header = "Type",
+                DisplayMemberBinding = new System.Windows.Data.Binding("EntityType"),
+                Width = 80
+            });
+            
+            gridView.Columns.Add(new GridViewColumn
+            {
+                Header = "Old Name",
+                DisplayMemberBinding = new System.Windows.Data.Binding("OldName"),
+                Width = 150
+            });
+            
+            gridView.Columns.Add(new GridViewColumn
+            {
+                Header = "New Name",
+                DisplayMemberBinding = new System.Windows.Data.Binding("NewName"),
+                Width = 150
+            });
+            
+            gridView.Columns.Add(new GridViewColumn
+            {
+                Header = "Reason",
+                DisplayMemberBinding = new System.Windows.Data.Binding("Reason"),
+                Width = 200
+            });
+            
+            return gridView;
+        }
+    }
+}
