@@ -30,5 +30,4 @@ AI Refactor Variable
 Настройка:
 Конфигурация сохраняется в %APPDATA%\dnSpy\AI_Refactor_Config.json
 
-https://disk.yandex.ru/d/_B3PLFGdzatjNQ
-https://disk.yandex.ru/d/hoNlJXBayahUnw
+https://disk.yandex.ru/d/hUQH71soaS0P6Q
